@@ -46,7 +46,8 @@ final class PassGenerator: NSObject, ObservableObject {
         Task {
             // 1) 尝试从 Bundle 读取预先签名的 pass.json 模板（由 sign_pass.sh 在构建期生成）
             if let passData = await self.loadBundledSignedPass(for: card),
-               let controller = PKAddPassesViewController(passData: passData) {
+               let pass = try? PKPass(data: passData),
+               let controller = PKAddPassesViewController(pass: pass) {
                 controller.delegate = self
                 await MainActor.run {
                     self.passController = PassControllerWrapper(controller: controller)
