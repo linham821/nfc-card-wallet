@@ -30,6 +30,7 @@ targets:
         buildPhase: resources
     settings:
       base:
+        PRODUCT_NAME: NFCCardWallet
         PRODUCT_BUNDLE_IDENTIFIER: com.nfccardwallet.app
         INFOPLIST_FILE: NFCCardWallet/Info.plist
         CODE_SIGN_ENTITLEMENTS: NFCCardWallet/NFCCardWallet.entitlements
@@ -39,4 +40,5 @@ targets:
         ENABLE_PREVIEWS: YES
         SWIFT_EMIT_LOC_STRINGS: YES
         SUPPORTS_MACCATALYST: NO
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/Frameworks"
     dependencies: []
