@@ -22,9 +22,13 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
           xcodebuild -version
 
-      - name: 安装 XcodeGen（兼容版本）
+      - name: 安装 XcodeGen 2.38.0（兼容 Xcode 15）
         run: |
-          brew install xcodegen@2.38.0 || brew install xcodegen
+          cd /tmp
+          curl -sL -o xcodegen.zip "https://github.com/yonaskolb/XcodeGen/releases/download/2.38.0/xcodegen.zip"
+          unzip -o xcodegen.zip
+          chmod +x xcodegen
+          sudo mv xcodegen /usr/local/bin/xcodegen
           xcodegen --version
 
       - name: 生成 Xcode 工程
@@ -35,7 +39,7 @@ jobs:
       - name: 编译未签名 .app
         run: |
           cd ios/NFCCardWallet
-          mkdir -p ../../build/DerivedData
+          mkdir -p "$GITHUB_WORKSPACE/build/DerivedData"
           xcodebuild build \
             -project NFCCardWallet.xcodeproj \
             -scheme NFCCardWallet \
@@ -46,19 +50,20 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            2>&1 | tee build.log
-          echo "Exit code: $?"
+            2>&1 | tee build.log || true
 
       - name: 检查编译结果
         run: |
-          APP_PATH=$(find "$GITHUB_WORKSPACE/build/DerivedData/Build/Products" -name "NFCCardWallet.app" -type d | head -1)
+          APP_PATH=$(find "$GITHUB_WORKSPACE/build/DerivedData/Build/Products" -name "NFCCardWallet.app" -type d 2>/dev/null | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "❌ 编译失败，未找到 .app"
-            echo "=== 最近错误 ==="
-            grep -i "error:" "$GITHUB_WORKSPACE/ios/NFCCardWallet/build.log" | tail -20 || true
+            echo "=== 编译错误摘要 ==="
+            grep -E "error:|BUILD FAILED" "$GITHUB_WORKSPACE/ios/NFCCardWallet/build.log" | head -20 || true
+            echo "=== 完整日志最后 50 行 ==="
+            tail -50 "$GITHUB_WORKSPACE/ios/NFCCardWallet/build.log"
             exit 1
           fi
-          echo "✅ 找到 .app: $APP_PATH"
+          echo "✅ 编译成功: $APP_PATH"
 
       - name: 打包为 .ipa
         run: |
