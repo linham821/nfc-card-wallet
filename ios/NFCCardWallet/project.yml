@@ -4,6 +4,8 @@ options:
   deploymentTarget:
     iOS: "16.0"
   developmentLanguage: zh-Hans
+  createIntermediateGroups: true
+  projectFormatVersion: "56"
 settings:
   base:
     SWIFT_VERSION: "5.9"
