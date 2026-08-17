@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PassKit
 import CoreImage.CIFilterBuiltins
 
 struct CardDetailView: View {
@@ -43,8 +44,8 @@ struct CardDetailView: View {
         .sheet(item: $passGen.previewPassData) { _ in
             AddWalletView(card: card, passGen: passGen)
         }
-        .sheet(item: $passGen.passController) { controller in
-            controller
+        .sheet(item: $passGen.passController) { wrapper in
+            PassControllerRepresentable(controller: wrapper.controller)
         }
     }
 
@@ -188,4 +189,15 @@ struct CardDetailView: View {
         ))
     }
     .modelContainer(for: NFCCard.self, inMemory: true)
+}
+
+/// UIViewControllerRepresentable 包装 PKAddPassesViewController 用于 SwiftUI sheet
+struct PassControllerRepresentable: UIViewControllerRepresentable {
+    let controller: PKAddPassesViewController
+
+    func makeUIViewController(context: Context) -> PKAddPassesViewController {
+        controller
+    }
+
+    func updateUIViewController(_ uiViewController: PKAddPassesViewController, context: Context) {}
 }

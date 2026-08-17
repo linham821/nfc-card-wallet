@@ -40,6 +40,7 @@ jobs:
         run: |
           cd ios/NFCCardWallet
           mkdir -p "$GITHUB_WORKSPACE/build/DerivedData"
+          set -o pipefail
           xcodebuild build \
             -project NFCCardWallet.xcodeproj \
             -scheme NFCCardWallet \
@@ -50,7 +51,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="" \
-            2>&1 | tee build.log || true
+            2>&1 | tee build.log
 
       - name: 检查编译结果
         run: |

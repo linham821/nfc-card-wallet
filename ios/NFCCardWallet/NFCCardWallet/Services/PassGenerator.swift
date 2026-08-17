@@ -14,9 +14,14 @@ import SwiftData
 final class PassGenerator: NSObject, ObservableObject {
 
     @Published var isLoading = false
-    @Published var passController: PKAddPassesViewController?
+    @Published var passController: PassControllerWrapper?
     @Published var lastError: String?
     @Published var previewPassData: PreviewPassData?
+
+    struct PassControllerWrapper: Identifiable {
+        let id = UUID()
+        let controller: PKAddPassesViewController
+    }
 
     struct PreviewPassData: Identifiable {
         let id = UUID()
@@ -44,7 +49,7 @@ final class PassGenerator: NSObject, ObservableObject {
                let controller = PKAddPassesViewController(passData: passData) {
                 controller.delegate = self
                 await MainActor.run {
-                    self.passController = controller
+                    self.passController = PassControllerWrapper(controller: controller)
                     self.isLoading = false
                 }
                 return

@@ -25,11 +25,15 @@ final class NFCReader: NSObject, ObservableObject {
         isScanning = true
 
         // 使用 TagReaderSession 可读取更详细的卡信息（UID/SAK/ATQA）
-        let session = NFCTagReaderSession(
+        guard let session = NFCTagReaderSession(
             pollingOption: [.iso14443, .iso15693, .iso18092],
             delegate: self,
             queue: nil
-        )
+        ) else {
+            errorMessage = "无法启动 NFC 会话"
+            isScanning = false
+            return
+        }
         session.alertMessage = "请将 NFC 卡片靠近 iPhone 背部"
         session.begin()
         self.session = session
@@ -117,11 +121,10 @@ extension NFCReader: NFCTagReaderSessionDelegate {
         switch tag {
         case .miFare(let mifare):
             let uid = mifare.identifier.map { String(format: "%02X", $0) }.joined(separator: " ")
-            let sak = String(format: "0x%02X", mifare.sak)
-            let atqa = String(format: "0x%04X", mifare.atqa)
-            let typeStr = Self.mifareTypeName(sak: mifare.sak, identifier: mifare.identifier)
+            // NFCMiFareTag 不直接暴露 SAK/ATQA，使用 mifareFamily 推断类型
+            let typeStr = Self.mifareFamilyName(mifare.mifareFamily)
             let ndef = await readNDEF(from: .miFare(mifare))
-            return ScanResult(uidHex: uid, cardType: typeStr, sakHex: sak, atqaHex: atqa, ndefInfo: ndef)
+            return ScanResult(uidHex: uid, cardType: typeStr, sakHex: "—", atqaHex: "—", ndefInfo: ndef)
 
         case .feliCa(let felica):
             let uid = felica.currentIDm.map { String(format: "%02X", $0) }.joined(separator: " ")
@@ -146,24 +149,18 @@ extension NFCReader: NFCTagReaderSessionDelegate {
         return "未检测"
     }
 
-    nonisolated static func mifareTypeName(sak: UInt8, identifier: Data) -> String {
-        // 根据常见 SAK 推断 MIFARE 卡子类型
-        switch sak {
-        case 0x00:
-            // UID 长度 7 通常为 Ultralight/NTAG
-            return identifier.count == 7 ? "MIFARE Ultralight / NTAG" : "MIFARE Classic (SAK 0x00)"
-        case 0x08:
-            return "MIFARE Classic 1K"
-        case 0x18:
-            return "MIFARE Classic 4K"
-        case 0x09:
-            return "MIFARE Mini"
-        case 0x20, 0x28:
-            return "MIFARE Plus / DESFire (ISO14443-4)"
-        case 0x40:
-            return "MIFARE Plus (SL0)"
-        default:
-            return "MIFARE (SAK 0x\(String(format: "%02X", sak)))"
+    nonisolated static func mifareFamilyName(_ family: NFCMiFareFamily) -> String {
+        switch family {
+        case .unknown:
+            return "MIFARE (Unknown)"
+        case .ultralight:
+            return "MIFARE Ultralight"
+        case .plus:
+            return "MIFARE Plus"
+        case .desfire:
+            return "MIFARE DESFire"
+        @unknown default:
+            return "MIFARE"
         }
     }
 }
