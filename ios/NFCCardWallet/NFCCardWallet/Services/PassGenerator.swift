@@ -128,6 +128,27 @@ final class PassGenerator: NSObject, ObservableObject {
         ]
     }
 
+    /// 把 pass.json 模板序列化为 JSON Data
+    static func passJSONData(for card: NFCCard) throws -> Data {
+        let template = passJSONTemplate(for: card)
+        return try JSONSerialization.data(withJSONObject: template, options: [.prettyPrinted, .sortedKeys])
+    }
+
+    /// 导出 pass.json 到文件（用于 AirDrop / 文件分享）
+    @MainActor
+    static func exportPassJSON(for card: NFCCard) -> URL? {
+        do {
+            let data = try passJSONData(for: card)
+            let tempDir = FileManager.default.temporaryDirectory
+            let filename = "pass-\(card.id.uuidString.prefix(8)).json"
+            let url = tempDir.appendingPathComponent(filename)
+            try data.write(to: url, options: .atomic)
+            return url
+        } catch {
+            return nil
+        }
+    }
+
     static let colorPalette: [(bg: String, fg: String, label: String)] = [
         ("rgb(44,62,80)",  "rgb(255,255,255)", "rgb(180,200,220)"),
         ("rgb(142,68,173)", "rgb(255,255,255)", "rgb(220,200,240)"),

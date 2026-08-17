@@ -44,23 +44,18 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
-    <!-- NFC 读取权限说明（必填，否则 App 启动 NFC 时会闪退） -->
-    <key>NFCReaderUsageDescription</key>
-    <string>NFC 卡包需要使用 NFC 来读取卡片 UID、类型与 NDEF 信息，用于本地保存与管理。</string>
+    <!-- 相机权限说明（用于扫码功能） -->
+    <key>NSCameraUsageDescription</key>
+    <string>NFC 卡包需要使用摄像头来扫描卡片上的二维码/条码，自动识别 UID 与卡信息。</string>
 
-    <!-- 可选：选中特定 AID 时弹出 NFC 选择器（这里用一组常见的 MIFARE/ISO7816 AID） -->
-    <key>com.apple.developer.nfc.readersession.iso7816.selectidentifiers</key>
-    <array>
-        <string>D2760000850100</string>
-        <string>D2760000850101</string>
-        <string>A0000004040601001000</string>
-        <string>A0000000041010</string>
-    </array>
+    <!-- 文件访问权限说明（用于导入 JSON / .pkpass） -->
+    <key>NSDocumentsFolderUsageDescription</key>
+    <string>NFC 卡包需要访问文件来导入 JSON 卡片数据或已签名的 .pkpass 文件。</string>
 
-    <!-- 系统级 NFC Reader Session Formats（与 entitlements 配合使用） -->
-    <key>com.apple.developer.nfc.readersession.felica.systemcodes</key>
-    <array>
-        <string>88B4</string>
-    </array>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
 </dict>
 </plist>

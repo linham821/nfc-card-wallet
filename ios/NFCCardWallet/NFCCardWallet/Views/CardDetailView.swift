@@ -148,6 +148,16 @@ struct CardDetailView: View {
             .controlSize(.large)
             .disabled(card.addedToWallet || passGen.isLoading)
 
+            Button {
+                sharePassJSON()
+            } label: {
+                Label("导出 pass.json", systemImage: "square.and.arrow.up")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+
             Button(role: .destructive) {
                 showingDeleteAlert = true
             } label: {
@@ -158,6 +168,16 @@ struct CardDetailView: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
         }
+    }
+
+    private func sharePassJSON() {
+        guard let url = PassGenerator.exportPassJSON(for: card) else { return }
+        showShareSheet(with: url)
+    }
+
+    private func showShareSheet(with url: URL) {
+        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        UIApplication.shared.rootViewController?.present(activityVC, animated: true)
     }
 
     private func deleteCard() {

@@ -2,18 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- NFC Reader Session：允许 App 在前台读取 NFC 标签 -->
-    <key>com.apple.developer.nfc.readersession</key>
-    <true/>
-
     <!-- PassKit：允许 App 调起 PKAddPassesViewController 加入 Wallet Pass -->
     <key>com.apple.developer.pass-type-identifiers</key>
     <array>
-        <!-- 把 TEAMIDXX 替换成你的 Team ID；pass.com.nfccardwallet.app 替换成你申请的 Pass Type ID -->
         <string>pass.com.nfccardwallet.app</string>
     </array>
 
-    <!-- 可选：如果你的 App 还要加 NFC Pass（需要 Apple Pay 资质，普通开发者拿不到）
-         可在 pass.json 里加 "nfc" 字段，但 entitlements 这边不需要额外配置 -->
+    <!-- 说明：
+         NFC Reader Session entitlement 已移除。
+         原因：Free Apple ID 无法获取此 capability，运行时 readingAvailable 返回 false。
+         App 改为手动输入/扫码/JSON 导入方式录入卡片信息。
+         如以后获得付费 Apple Developer Program 会员资格，可在此重新添加：
+            <key>com.apple.developer.nfc.readersession</key>
+            <true/>
+         并在 Info.plist 恢复 NFCReaderUsageDescription 和 iso7816/felica 配置。
+    -->
 </dict>
 </plist>

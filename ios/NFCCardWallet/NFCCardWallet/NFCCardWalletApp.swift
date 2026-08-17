@@ -26,9 +26,9 @@ struct RootView: View {
                 }
                 .tag(Tab.list)
 
-            ScanView()
+            AddCardView()
                 .tabItem {
-                    Label("扫描", systemImage: "wave.3.right.circle.fill")
+                    Label("添加", systemImage: "plus.circle.fill")
                 }
                 .tag(Tab.scan)
 

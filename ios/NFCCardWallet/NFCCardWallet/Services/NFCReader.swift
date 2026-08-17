@@ -15,8 +15,26 @@ final class NFCReader: NSObject, ObservableObject {
     }
 
     func startScanning() {
+        // NFCReaderSession.readingAvailable 检查硬件能力 + App 是否有 NFC Reader Session entitlement
         guard NFCReaderSession.readingAvailable else {
-            errorMessage = "此设备不支持 NFC 读取"
+            errorMessage = """
+NFC 不可用
+
+根本原因：Free Apple ID 无法获取 NFC 权限
+─────────────────────────────
+iOS 通过 embedded.mobileprovision 检查权限。Sideloadly 用免费 Apple ID 重签时，Apple 服务器会丢弃 com.apple.developer.nfc.readersession entitlement（免费账号无此 capability）。即使 IPA 中注入了 entitlement，运行时也会被忽略。
+
+解决方案（任选其一）：
+1. 付费 Apple Developer Program（$99/年）
+   - 注册后到 App IDs 启用 NFC Tag Reading capability
+   - 用付费账号重新签名 IPA
+2. 使用别人的付费开发者账号证书
+   - 导出 .p12 + provisioning profile
+   - Sideloadly 选 "Custom Certificate" 模式签名
+3. 越狱 iPhone（需对应 iOS 版本的越狱工具）
+   - 越狱后绕过 entitlement 检查
+4. TrollStore 永久签名（仅特定 iOS 版本支持）
+"""
             return
         }
         // 重置上一次结果

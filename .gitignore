@@ -36,3 +36,22 @@ fastlane/screenshots
 *.cer
 *.mobileprovision
 certs/
+
+# XcodeGen 生成的工程（不入库，由 CI 现场生成）
+ios/NFCCardWallet/NFCCardWallet.xcodeproj/
+
+# 临时调试脚本与截图
+scripts/mousectl
+scripts/mousectl.swift
+scripts/inject_entitlements.py
+scripts/proxy_bridge.py
+scripts/sideloadly_local_server.py
+scripts/sideloadly_proxy.py
+scripts/launch_sideloadly.sh
+scripts/start_sideloadly.sh
+scripts/build_final_ipa.sh
+
+# 调试日志与截图
+*.log
+_*.png
+accessibility_*.png

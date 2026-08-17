@@ -80,6 +80,17 @@ if [[ "$METHOD" == "unsigned" ]]; then
     fi
     echo "==> .app 路径: $APP_PATH"
 
+    # 用 ad-hoc codesign 嵌入 entitlements（NFC 等能力需要）
+    # 这样 Sideloadly 重签时能保留这些 entitlements
+    ENTITLEMENTS_PATH="$IOS_DIR/NFCCardWallet/NFCCardWallet.entitlements"
+    if [[ -f "$ENTITLEMENTS_PATH" ]]; then
+        echo "==> 嵌入 entitlements: $ENTITLEMENTS_PATH"
+        codesign --force --sign - --entitlements "$ENTITLEMENTS_PATH" "$APP_PATH" 2>&1 | sed 's/^/    /'
+        echo "    ✅ Entitlements 已嵌入"
+    else
+        echo "    ⚠️  未找到 entitlements 文件: $ENTITLEMENTS_PATH"
+    fi
+
     # 包装为 .ipa（Payload/ 目录结构）
     rm -rf "$EXPORT_DIR"
     mkdir -p "$EXPORT_DIR/Payload"

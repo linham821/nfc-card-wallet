@@ -35,12 +35,12 @@ struct CardListView: View {
 
     private var emptyState: some View {
         VStack(spacing: 12) {
-            Image(systemName: "wave.3.right.circle.fill")
+            Image(systemName: "plus.circle.fill")
                 .font(.system(size: 70))
                 .foregroundStyle(.gray.opacity(0.4))
             Text("还没有卡片")
                 .font(.title3.bold())
-            Text("切到「扫描」Tab 读取第一张 NFC 卡")
+            Text("切到「添加」Tab 手动输入、扫码或导入 JSON")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
