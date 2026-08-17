@@ -159,9 +159,9 @@ struct ImportPassView: View {
 
     private func buildSummary(_ pass: PKPass) -> String {
         var parts: [String] = []
-        if let desc = pass.localizedName, !desc.isEmpty { parts.append("名称: \(desc)") }
-        if let org = pass.organizationName, !org.isEmpty { parts.append("发行方: \(org)") }
-        if let desc = pass.passTypeDescription, !desc.isEmpty { parts.append("描述: \(desc)") }
+        if !pass.localizedName.isEmpty { parts.append("名称: \(pass.localizedName)") }
+        if !pass.organizationName.isEmpty { parts.append("发行方: \(pass.organizationName)") }
+        if !pass.passTypeIdentifier.isEmpty { parts.append("类型: \(pass.passTypeIdentifier)") }
         return parts.isEmpty ? "（无 Pass 元数据）" : parts.joined(separator: "\n")
     }
 }
