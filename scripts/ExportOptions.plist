@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        ExportOptions.plist
+        ====================
+        这是手动签名场景的示例配置。
+        build_ipa.sh 会根据传入参数动态生成临时 ExportOptions.plist；
+        此文件仅作参考与手动 xcodebuild -exportArchive 调用时使用。
+    -->
+    <key>method</key>
+    <string>development</string>
+
+    <key>signingStyle</key>
+    <string>manual</string>
+
+    <key>teamID</key>
+    <string>TEAMIDXX</string>
+
+    <key>compileBitcode</key>
+    <false/>
+
+    <key>stripSwiftSymbols</key>
+    <true/>
+
+    <key>thinning</key>
+    <string>&lt;none&gt;</string>
+
+    <!--
+        如果用 manual 签名，可显式指定 Provisioning Profile（按 bundle id 映射）：
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.nfccardwallet.app</key>
+        <string>NFCCardWallet_Development_Profile</string>
+    </dict>
+    -->
+</dict>
+</plist>

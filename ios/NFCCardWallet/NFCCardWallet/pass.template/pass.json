@@ -1,0 +1,27 @@
+{
+    "description": "NFC Card Wallet 保存的卡片",
+    "formatVersion": 1,
+    "organizationName": "NFC Card Wallet",
+    "passTypeIdentifier": "pass.com.nfccardwallet.app",
+    "serialNumber": "REPLACE_SERIAL",
+    "teamIdentifier": "TEAMIDXX",
+    "generic": {
+        "primaryFields": [
+            { "key": "name", "label": "卡片名称", "value": "REPLACE_NAME" }
+        ],
+        "secondaryFields": [
+            { "key": "uid", "label": "UID", "value": "REPLACE_UID" }
+        ],
+        "auxiliaryFields": [
+            { "key": "type", "label": "类型", "value": "REPLACE_TYPE" },
+            { "key": "num", "label": "卡号", "value": "REPLACE_NUM" }
+        ],
+        "backFields": [
+            { "key": "info", "label": "说明", "value": "此 Pass 由 NFC Card Wallet App 生成，包含 NFC 卡 UID。仅用于扫码展示，不能作为 NFC 卡模拟使用。" }
+        ]
+    },
+    "backgroundColor": "rgb(44,62,80)",
+    "foregroundColor": "rgb(255,255,255)",
+    "labelColor": "rgb(180,200,220)",
+    "logoText": "NFC Card"
+}

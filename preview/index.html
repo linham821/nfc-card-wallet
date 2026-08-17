@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFC Card Wallet — iPhone App 预览</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #fff;
+  }
+  .stage { display: flex; gap: 40px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+  /* iPhone 外壳 */
+  .iphone {
+    width: 375px;
+    height: 812px;
+    background: #000;
+    border-radius: 55px;
+    padding: 12px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 2px #2a2a2a, inset 0 0 0 2px #1a1a1a;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .iphone::before {
+    content: "";
+    position: absolute;
+    top: 24px; left: 50%;
+    transform: translateX(-50%);
+    width: 150px; height: 32px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 10;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    background: #f2f2f7;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    color: #000;
+  }
+  .status-bar {
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 28px 8px;
+    font-size: 15px;
+    font-weight: 600;
+    background: transparent;
+    position: relative;
+    z-index: 5;
+  }
+  .status-bar .right { display: flex; gap: 6px; align-items: center; }
+  .battery { width: 25px; height: 12px; border: 1px solid #000; border-radius: 3px; position: relative; padding: 1px; }
+  .battery::after { content: ""; position: absolute; right: -3px; top: 3px; width: 2px; height: 4px; background: #000; border-radius: 0 1px 1px 0; }
+  .battery span { display: block; height: 100%; width: 80%; background: #000; border-radius: 1px; }
+
+  .nav-bar {
+    padding: 8px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nav-bar h1 { font-size: 32px; font-weight: 800; letter-spacing: -.5px; }
+  .add-btn {
+    width: 36px; height: 36px;
+    background: #007aff;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,122,255,.4);
+  }
+  .add-btn:active { transform: scale(0.95); }
+
+  .content { padding: 0 20px 100px; height: calc(100% - 110px); overflow-y: auto; }
+  .content::-webkit-scrollbar { display: none; }
+
+  /* 卡片视图 */
+  .card-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: #8e8e93;
+  }
+  .card-empty .icon { font-size: 60px; margin-bottom: 16px; opacity: .4; }
+  .card-empty h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #000; }
+  .card-empty p { font-size: 14px; line-height: 1.5; }
+
+  .card-list { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+  .card-item {
+    background: linear-gradient(135deg, var(--c1, #2c3e50), var(--c2, #4a6741));
+    border-radius: 16px;
+    padding: 18px;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,.15);
+    transition: transform .15s;
+  }
+  .card-item:active { transform: scale(0.98); }
+  .card-item::after {
+    content: "";
+    position: absolute;
+    right: -30px; top: -30px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,.08);
+    border-radius: 50%;
+  }
+  .card-item .type { font-size: 12px; opacity: .8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .card-item .name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .card-item .uid { font-size: 12px; font-family: "SF Mono", monospace; opacity: .7; }
+  .card-item .added { position: absolute; top: 14px; right: 16px; font-size: 11px; background: rgba(255,255,255,.2); padding: 3px 8px; border-radius: 10px; }
+
+  /* 底部 Tab */
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 83px;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,.08);
+    display: flex;
+    padding-bottom: 20px;
+  }
+  .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #8e8e93;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 500;
+    transition: color .15s;
+  }
+  .tab.active { color: #007aff; }
+  .tab .icon { font-size: 24px; }
+
+  /* 扫描视图 */
+  .scan-view { padding: 20px; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; }
+  .scan-view h2 { font-size: 22px; font-weight: 700; margin-top: 30px; margin-bottom: 8px; }
+  .scan-view p { color: #8e8e93; font-size: 14px; margin-bottom: 40px; line-height: 1.5; }
+  .scan-ring {
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    border: 3px solid rgba(0,122,255,.2);
+    position: relative;
+    margin-bottom: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scan-ring::before, .scan-ring::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid transparent;
+  }
+  .scan-ring.scanning::before {
+    border-top-color: #007aff;
+    border-right-color: #007aff;
+    animation: spin 1s linear infinite;
+  }
+  .scan-ring.scanning::after {
+    border-bottom-color: #34c759;
+    animation: spin 1.5s linear infinite reverse;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .scan-ring .nfc-icon { font-size: 64px; opacity: .6; }
+  .scan-result {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 0 20px;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    width: 100%;
+    max-width: 320px;
+    display: none;
+  }
+  .scan-result.show { display: block; animation: pop .3s ease; }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .scan-result h4 { font-size: 13px; color: #8e8e93; margin-bottom: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .scan-result .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f2f2f7; }
+  .scan-result .row:last-child { border-bottom: none; }
+  .scan-result .row .val { font-family: "SF Mono", monospace; color: #007aff; }
+  .scan-actions { margin-top: 20px; display: flex; gap: 10px; width: 100%; max-width: 320px; }
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: #007aff; color: #fff; }
+  .btn-secondary { background: #e5e5ea; color: #000; }
+  .btn-success { background: #34c759; color: #fff; }
+
+  /* 详情视图 */
+  .detail-view { padding: 0 20px; height: 100%; overflow-y: auto; }
+  .detail-hero {
+    border-radius: 18px;
+    padding: 24px;
+    color: #fff;
+    margin: 10px 0 20px;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-hero::after {
+    content: "";
+    position: absolute; right: -40px; top: -40px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,.1);
+    border-radius: 50%;
+  }
+  .detail-hero .chip {
+    width: 40px; height: 30px;
+    background: linear-gradient(135deg, #ffd700, #b8860b);
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+  .detail-hero h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .detail-hero .uid-big { font-family: "SF Mono", monospace; font-size: 13px; opacity: .8; }
+  .qr-section {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .qr-section .qr {
+    width: 160px; height: 160px;
+    margin: 0 auto 12px;
+    background: #fff;
+    display: grid;
+    grid-template-columns: repeat(21, 1fr);
+    gap: 1px;
+    padding: 8px;
+    border: 1px solid #e5e5ea;
+    border-radius: 8px;
+  }
+  .qr-section .qr div { background: #000; }
+  .qr-section .qr div.w { background: #fff; }
+  .qr-section .label { font-size: 12px; color: #8e8e93; }
+  .info-section { background: #fff; border-radius: 14px; padding: 4px 16px; margin-bottom: 16px; }
+  .info-row { display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f2f2f7; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .k { color: #8e8e93; }
+  .info-row .v { color: #000; font-weight: 500; font-family: "SF Mono", monospace; font-size: 12px; }
+  .detail-actions { display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
+  .detail-actions .btn { width: 100%; }
+
+  /* 钱包预览 */
+  .wallet-mock {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .wallet-mock .pass {
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    border-radius: 12px;
+    padding: 16px;
+    color: #fff;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .wallet-mock .pass .head { display: flex; justify-content: space-between; font-size: 11px; opacity: .8; margin-bottom: 8px; }
+  .wallet-mock .pass .strip { background: rgba(0,0,0,.25); height: 30px; margin: 8px -16px; }
+  .wallet-mock .pass .footer { display: flex; justify-content: space-between; align-items: center; }
+  .wallet-mock .pass .qr-mini { width: 40px; height: 40px; background: #fff; padding: 3px; border-radius: 4px; }
+  .wallet-mock .status {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #34c759;
+    color: #fff;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* 旁注说明面板 */
+  .info-panel {
+    width: 320px;
+    color: #fff;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+  }
+  .info-panel h2 { font-size: 18px; margin-bottom: 16px; color: #5ac8fa; }
+  .info-panel h3 { font-size: 14px; margin: 16px 0 8px; color: #ffcc00; }
+  .info-panel p, .info-panel li { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.85); }
+  .info-panel ul { padding-left: 18px; margin: 8px 0; }
+  .info-panel .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(255,255,255,.1);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: "SF Mono", monospace;
+    margin-right: 4px;
+  }
+  .info-panel .warn { background: rgba(255,59,48,.15); border-left: 3px solid #ff3b30; padding: 8px 12px; margin: 12px 0; border-radius: 4px; }
+  .info-panel .ok { background: rgba(52,199,89,.15); border-left: 3px solid #34c759; padding: 8px 12px; margin: 12px 0; border-radius: 4px; }
+
+  .toast {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,.85);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- iPhone 屏幕 -->
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="right">
+          <span style="font-size:11px;">●●●●</span>
+          <span style="font-size:11px;">📶</span>
+          <div class="battery"><span></span></div>
+        </div>
+      </div>
+
+      <!-- 视图：卡片列表 -->
+      <div id="view-list" class="view" style="display:block;">
+        <div class="nav-bar">
+          <h1>我的卡片</h1>
+          <button class="add-btn" onclick="goScan()">+</button>
+        </div>
+        <div class="content">
+          <div class="card-list" id="cardList"></div>
+        </div>
+      </div>
+
+      <!-- 视图：扫描 NFC -->
+      <div id="view-scan" class="view" style="display:none;">
+        <div class="nav-bar">
+          <button class="add-btn" style="background:#e5e5ea;color:#000;" onclick="goList()">‹</button>
+          <h1 style="font-size:17px;font-weight:600;">扫描 NFC</h1>
+          <div style="width:36px;"></div>
+        </div>
+        <div class="scan-view">
+          <h2 id="scanTitle">将卡片靠近手机</h2>
+          <p id="scanSub">把 NFC 卡片贴到 iPhone 背部上方<br>直到听到提示音</p>
+          <div class="scan-ring" id="scanRing">
+            <div class="nfc-icon">📡</div>
+          </div>
+          <div class="scan-result" id="scanResult">
+            <h4>读取结果</h4>
+            <div class="row"><span>UID</span><span class="val" id="rUid">—</span></div>
+            <div class="row"><span>类型</span><span class="val" id="rType">—</span></div>
+            <div class="row"><span>SAK</span><span class="val" id="rSak">—</span></div>
+            <div class="row"><span>ATQA</span><span class="val" id="rAtqa">—</span></div>
+            <div class="row"><span>NDEF</span><span class="val" id="rNdef">—</span></div>
+          </div>
+          <div class="scan-actions">
+            <button class="btn btn-secondary" onclick="goList()">取消</button>
+            <button class="btn btn-primary" id="saveBtn" onclick="saveScanned()" disabled>保存</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图：卡片详情 -->
+      <div id="view-detail" class="view" style="display:none;">
+        <div class="nav-bar">
+          <button class="add-btn" style="background:#e5e5ea;color:#000;width:36px;height:36px;" onclick="goList()">‹</button>
+          <h1 style="font-size:17px;font-weight:600;">卡片详情</h1>
+          <div style="width:36px;"></div>
+        </div>
+        <div class="detail-view">
+          <div class="detail-hero" id="detailHero">
+            <div class="chip"></div>
+            <h2 id="detailName">—</h2>
+            <div class="uid-big" id="detailUid">—</div>
+          </div>
+          <div class="qr-section">
+            <div class="qr" id="qrBox"></div>
+            <div class="label">UID 二维码（用于扫码门禁）</div>
+          </div>
+          <div class="info-section">
+            <div class="info-row"><span class="k">卡片类型</span><span class="v" id="dType">—</span></div>
+            <div class="info-row"><span class="k">SAK</span><span class="v" id="dSak">—</span></div>
+            <div class="info-row"><span class="k">ATQA</span><span class="v" id="dAtqa">—</span></div>
+            <div class="info-row"><span class="k">读取时间</span><span class="v" id="dTime">—</span></div>
+            <div class="info-row"><span class="k">已加到钱包</span><span class="v" id="dWallet">否</span></div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn btn-success" id="addWalletBtn" onclick="addToWallet()">加入 Apple Wallet</button>
+            <button class="btn btn-secondary" onclick="deleteCard()">删除卡片</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图：加入钱包（模拟） -->
+      <div id="view-wallet" class="view" style="display:none;">
+        <div class="nav-bar">
+          <button class="add-btn" style="background:#e5e5ea;color:#000;" onclick="goDetail()">‹</button>
+          <h1 style="font-size:17px;font-weight:600;">加入钱包</h1>
+          <div style="width:36px;"></div>
+        </div>
+        <div class="detail-view">
+          <div class="wallet-mock">
+            <div class="pass" id="walletPass">
+              <div class="head">
+                <span>NFC Card Wallet</span>
+                <span id="walletType">门禁卡</span>
+              </div>
+              <div style="font-size:18px;font-weight:700;" id="walletName">—</div>
+              <div style="font-size:11px;opacity:.7;font-family:monospace;" id="walletUid">—</div>
+              <div class="strip"></div>
+              <div class="footer">
+                <div>
+                  <div style="font-size:10px;opacity:.7;">卡号</div>
+                  <div style="font-size:13px;font-family:monospace;" id="walletNum">—</div>
+                </div>
+                <div class="qr-mini" id="walletQr"></div>
+              </div>
+            </div>
+            <div id="walletStatus" style="display:none;">
+              <div class="status">✓ 已加入 Wallet</div>
+              <p style="font-size:12px;color:#8e8e93;margin-top:12px;line-height:1.5;">
+                在 iPhone 自带的"钱包"App 中可查看。<br>
+                <b>注：</b>此 Pass 为通用卡（generic），包含 UID 二维码，<br>
+                适用于支持扫码的门禁，<b>不是 NFC 卡模拟</b>。
+              </p>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn btn-success" id="confirmWalletBtn" onclick="confirmAddWallet()">确认添加</button>
+            <button class="btn btn-secondary" onclick="goDetail()">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部 Tab -->
+      <div class="tab-bar">
+        <div class="tab active" onclick="goList()"><span class="icon">💳</span>卡片</div>
+        <div class="tab" onclick="goScan()"><span class="icon">📡</span>扫描</div>
+        <div class="tab" onclick="showToast('Wallet 由系统提供')"><span class="icon">👛</span>钱包</div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+
+  <!-- 旁注说明 -->
+  <div class="info-panel">
+    <h2>📱 NFC Card Wallet — 预览说明</h2>
+    <p>这是 iPhone App 的浏览器预览版。点击 iPhone 屏幕里的按钮体验完整流程。</p>
+
+    <h3>功能流程</h3>
+    <ul>
+      <li><b>扫描</b> → 模拟 Core NFC 读取 NFC 标签</li>
+      <li><b>保存</b> → 写入 SwiftData 本地存储</li>
+      <li><b>详情</b> → 生成 UID 二维码</li>
+      <li><b>加入钱包</b> → 用 PassKit 生成 .pkpass</li>
+    </ul>
+
+    <h3>关键技术</h3>
+    <p>
+      <span class="tag">Core NFC</span>
+      <span class="tag">SwiftUI</span>
+      <span class="tag">SwiftData</span>
+      <span class="tag">PassKit</span>
+      <span class="tag">NFCReaderSession</span>
+    </p>
+
+    <div class="ok">
+      ✅ <b>可做到：</b>读 NFC UID/类型/NDEF、本地存储、生成 .pkpass 加到 Wallet（含二维码）
+    </div>
+    <div class="warn">
+      ⚠️ <b>做不到：</b>iPhone 无法做 NFC 卡模拟（Card Emulation）。Wallet Pass 仅显示二维码，<b>不能</b>被 NFC 读卡器识别为门禁卡。
+    </div>
+
+    <h3>试一下</h3>
+    <p>点击屏幕右上 <b>+</b> 或下方 <b>📡扫描</b> 开始模拟读取。</p>
+    <p style="margin-top:12px;font-size:11px;opacity:.6;">© NFC Card Wallet Preview</p>
+  </div>
+
+</div>
+
+<script>
+  // 卡片颜色组合
+  const COLORS = [
+    ['#2c3e50','#4a6741'],
+    ['#8e44ad','#5b2c87'],
+    ['#c0392b','#922b21'],
+    ['#16a085','#0e6655'],
+    ['#2980b9','#1b4f72'],
+    ['#d35400','#a04000']
+  ];
+
+  // 模拟卡片数据
+  let cards = [
+    { id: 1, name: '小区门禁卡', uid: '04:A3:12:5F:7B:81', type: 'MIFARE Ultralight', sak: '0x00', atqa: '0x4400', ndef: '有 (32B)', time: '2026-08-14 10:23', wallet: false, color: 0 },
+    { id: 2, name: '公司工牌', uid: '1A:2B:3C:4D:5E:6F', type: 'MIFARE Classic 1K', sak: '0x08', atqa: '0x0400', ndef: '无', time: '2026-08-12 09:15', wallet: true, color: 1 }
+  ];
+  let nextId = 3;
+  let currentCard = null;
+  let scannedData = null;
+
+  // 渲染卡片列表
+  function renderList() {
+    const el = document.getElementById('cardList');
+    if (cards.length === 0) {
+      el.innerHTML = `
+        <div class="card-empty">
+          <div class="icon">📡</div>
+          <h3>还没有卡片</h3>
+          <p>点击右上角 + 扫描你的第一张 NFC 卡</p>
+        </div>`;
+      return;
+    }
+    el.innerHTML = cards.map(c => {
+      const [c1, c2] = COLORS[c.color % COLORS.length];
+      return `
+        <div class="card-item" style="--c1:${c1};--c2:${c2};" onclick="goDetail(${c.id})">
+          ${c.wallet ? '<div class="added">✓ 已加钱包</div>' : ''}
+          <div class="type">${c.type}</div>
+          <div class="name">${c.name}</div>
+          <div class="uid">UID: ${c.uid}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // 视图切换
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+    document.getElementById('view-' + id).style.display = 'block';
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (id === 'list' && i === 0) || (id === 'scan' && i === 1));
+    });
+  }
+  function goList() { showView('list'); renderList(); }
+  function goScan() {
+    showView('scan');
+    resetScan();
+    setTimeout(() => startScan(), 400);
+  }
+  function goDetail(id) {
+    if (id !== undefined) currentCard = cards.find(c => c.id === id);
+    if (!currentCard) { goList(); return; }
+    showView('detail');
+    const [c1, c2] = COLORS[currentCard.color % COLORS.length];
+    const hero = document.getElementById('detailHero');
+    hero.style.setProperty('--c1', c1);
+    hero.style.setProperty('--c2', c2);
+    document.getElementById('detailName').textContent = currentCard.name;
+    document.getElementById('detailUid').textContent = 'UID: ' + currentCard.uid;
+    document.getElementById('dType').textContent = currentCard.type;
+    document.getElementById('dSak').textContent = currentCard.sak;
+    document.getElementById('dAtqa').textContent = currentCard.atqa;
+    document.getElementById('dTime').textContent = currentCard.time;
+    document.getElementById('dWallet').textContent = currentCard.wallet ? '是' : '否';
+    document.getElementById('addWalletBtn').textContent = currentCard.wallet ? '已在钱包中' : '加入 Apple Wallet';
+    document.getElementById('addWalletBtn').disabled = currentCard.wallet;
+    document.getElementById('addWalletBtn').style.opacity = currentCard.wallet ? 0.5 : 1;
+    renderQR('qrBox', currentCard.uid);
+  }
+  function goWallet() {
+    if (!currentCard) return;
+    showView('wallet');
+    const [c1, c2] = COLORS[currentCard.color % COLORS.length];
+    const pass = document.getElementById('walletPass');
+    pass.style.setProperty('--c1', c1);
+    pass.style.setProperty('--c2', c2);
+    document.getElementById('walletName').textContent = currentCard.name;
+    document.getElementById('walletUid').textContent = 'UID: ' + currentCard.uid;
+    document.getElementById('walletType').textContent = currentCard.type;
+    document.getElementById('walletNum').textContent = currentCard.uid.replace(/:/g, '');
+    renderQR('walletQr', currentCard.uid, 8);
+    document.getElementById('walletStatus').style.display = 'none';
+    document.getElementById('confirmWalletBtn').disabled = false;
+    document.getElementById('confirmWalletBtn').textContent = '确认添加';
+    document.getElementById('confirmWalletBtn').style.opacity = 1;
+  }
+
+  // 模拟扫描
+  function resetScan() {
+    document.getElementById('scanRing').classList.remove('scanning');
+    document.getElementById('scanResult').classList.remove('show');
+    document.getElementById('saveBtn').disabled = true;
+    document.getElementById('saveBtn').style.opacity = 0.5;
+    document.getElementById('scanTitle').textContent = '将卡片靠近手机';
+    document.getElementById('scanSub').innerHTML = '把 NFC 卡片贴到 iPhone 背部上方<br>直到听到提示音';
+    scannedData = null;
+  }
+  function startScan() {
+    const ring = document.getElementById('scanRing');
+    ring.classList.add('scanning');
+    document.getElementById('scanTitle').textContent = '正在扫描...';
+    document.getElementById('scanSub').textContent = '请保持卡片贴紧';
+    // 模拟 2 秒后读到卡
+    setTimeout(() => {
+      const samples = [
+        { uid: genUid(), type: 'MIFARE Ultralight', sak: '0x00', atqa: '0x4400', ndef: '有 (48B)' },
+        { uid: genUid(), type: 'MIFARE Classic 4K', sak: '0x18', atqa: '0x0200', ndef: '无' },
+        { uid: genUid(), type: 'ISO14443-4A', sak: '0x20', atqa: '0x0400', ndef: '有 (128B)' },
+        { uid: genUid(), type: 'FeliCa', sak: '—', atqa: '—', ndef: '—' }
+      ];
+      scannedData = samples[Math.floor(Math.random() * samples.length)];
+      ring.classList.remove('scanning');
+      ring.querySelector('.nfc-icon').textContent = '✅';
+      document.getElementById('rUid').textContent = scannedData.uid;
+      document.getElementById('rType').textContent = scannedData.type;
+      document.getElementById('rSak').textContent = scannedData.sak;
+      document.getElementById('rAtqa').textContent = scannedData.atqa;
+      document.getElementById('rNdef').textContent = scannedData.ndef;
+      document.getElementById('scanResult').classList.add('show');
+      document.getElementById('scanTitle').textContent = '读取成功！';
+      document.getElementById('scanSub').textContent = '已检测到 NFC 卡片';
+      document.getElementById('saveBtn').disabled = false;
+      document.getElementById('saveBtn').style.opacity = 1;
+      showToast('读到卡片: ' + scannedData.type);
+    }, 2200);
+  }
+  function genUid() {
+    const bytes = 4 + Math.floor(Math.random() * 3);
+    const arr = [];
+    for (let i = 0; i < bytes; i++) arr.push(Math.floor(Math.random()*256).toString(16).padStart(2,'0').toUpperCase());
+    return arr.join(':');
+  }
+  function saveScanned() {
+    if (!scannedData) return;
+    const card = {
+      id: nextId++,
+      name: '卡片 #' + (cards.length + 1),
+      uid: scannedData.uid,
+      type: scannedData.type,
+      sak: scannedData.sak,
+      atqa: scannedData.atqa,
+      ndef: scannedData.ndef,
+      time: new Date().toLocaleString('zh-CN', { hour12: false }).replace(/\//g,'-'),
+      wallet: false,
+      color: cards.length % COLORS.length
+    };
+    cards.unshift(card);
+    showToast('已保存: ' + card.name);
+    currentCard = card;
+    goDetail(card.id);
+  }
+
+  // 加入钱包（模拟）
+  function addToWallet() {
+    if (!currentCard || currentCard.wallet) return;
+    goWallet();
+  }
+  function confirmAddWallet() {
+    if (!currentCard) return;
+    currentCard.wallet = true;
+    document.getElementById('walletStatus').style.display = 'block';
+    document.getElementById('confirmWalletBtn').disabled = true;
+    document.getElementById('confirmWalletBtn').textContent = '已添加 ✓';
+    document.getElementById('confirmWalletBtn').style.opacity = 0.6;
+    showToast('已生成 .pkpass 并加入 Wallet');
+  }
+
+  function deleteCard() {
+    if (!currentCard) return;
+    if (!confirm('确定删除这张卡片？')) return;
+    cards = cards.filter(c => c.id !== currentCard.id);
+    currentCard = null;
+    showToast('卡片已删除');
+    goList();
+  }
+
+  // 生成简单二维码（伪 QR 视觉效果）
+  function renderQR(id, text, size = 21) {
+    const box = document.getElementById(id);
+    if (!box) return;
+    // 用 hash 生成确定性图案
+    let h = 0;
+    for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
+    box.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    let html = '';
+    for (let i = 0; i < size * size; i++) {
+      // 三个定位角
+      const r = Math.floor(i / size), c = i % size;
+      const inCorner = (r < 7 && c < 7) || (r < 7 && c >= size-7) || (r >= size-7 && c < 7);
+      let dark;
+      if (inCorner) {
+        const lr = r % 7, lc = c % 7;
+        const r0 = lr === 0 || lr === 6;
+        const r1 = lr === 1 || lr === 5;
+        const c0 = lc === 0 || lc === 6;
+        const c1 = lc === 1 || lc === 5;
+        dark = (r0 || c0) || (!r1 && !c1 && lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4);
+      } else {
+        h = (h * 1103515245 + 12345) & 0x7fffffff;
+        dark = (h & 1) === 1;
+      }
+      html += `<div${dark ? '' : ' class="w"'}></div>`;
+    }
+    box.innerHTML = html;
+    box.dataset.text = text;
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  // 初始化
+  renderList();
+</script>
+</body>
+</html>

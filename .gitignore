@@ -1,0 +1,38 @@
+# 临时构建产物
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+*.swp
+*.lock
+*.moved-aside
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Packages/
+
+# CocoaPods（本项目不用，但保留）
+Pods/
+
+# fastlane（本项目不用）
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+
+# 证书与签名材料（绝不入库）
+*.p12
+*.cer
+*.mobileprovision
+certs/

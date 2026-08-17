@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- NFC Reader Session：允许 App 在前台读取 NFC 标签 -->
+    <key>com.apple.developer.nfc.readersession</key>
+    <true/>
+
+    <!-- PassKit：允许 App 调起 PKAddPassesViewController 加入 Wallet Pass -->
+    <key>com.apple.developer.pass-type-identifiers</key>
+    <array>
+        <!-- 把 TEAMIDXX 替换成你的 Team ID；pass.com.nfccardwallet.app 替换成你申请的 Pass Type ID -->
+        <string>pass.com.nfccardwallet.app</string>
+    </array>
+
+    <!-- 可选：如果你的 App 还要加 NFC Pass（需要 Apple Pay 资质，普通开发者拿不到）
+         可在 pass.json 里加 "nfc" 字段，但 entitlements 这边不需要额外配置 -->
+</dict>
+</plist>

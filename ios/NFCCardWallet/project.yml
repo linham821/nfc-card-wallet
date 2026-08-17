@@ -1,0 +1,42 @@
+name: NFCCardWallet
+options:
+  bundleIdPrefix: com.nfccardwallet
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: zh-Hans
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_BITCODE: NO
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  NFCCardWallet:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: NFCCardWallet
+        excludes:
+          - "**/.DS_Store"
+    resources:
+      - path: NFCCardWallet/Assets.xcassets
+        optional: true
+      - path: NFCCardWallet/pass.template
+        optional: true
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nfccardwallet.app
+        INFOPLIST_FILE: NFCCardWallet/Info.plist
+        CODE_SIGN_ENTITLEMENTS: NFCCardWallet/NFCCardWallet.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+        SUPPORTS_MACCATALYST: NO
+    dependencies: []
