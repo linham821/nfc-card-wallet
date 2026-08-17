@@ -2,7 +2,7 @@ name: NFCCardWallet
 options:
   bundleIdPrefix: com.nfccardwallet
   deploymentTarget:
-    iOS: "16.0"
+    iOS: "17.0"
   developmentLanguage: zh-Hans
 settings:
   base:
@@ -17,7 +17,7 @@ targets:
   NFCCardWallet:
     type: application
     platform: iOS
-    deploymentTarget: "16.0"
+    deploymentTarget: "17.0"
     sources:
       - path: NFCCardWallet
         excludes:
